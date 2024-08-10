@@ -7,7 +7,7 @@ namespace XIVSlothCombo.Combos.JP
 {
     internal class DNC_ST : CustomCombo
     {
-        protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.DNC_ST_SimpleMode;
+        protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.DNC_ST_AdvancedMode;
 
         protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
         {
@@ -117,7 +117,7 @@ namespace XIVSlothCombo.Combos.JP
 
     internal class DNC_AoE : CustomCombo
     {
-        protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.DNC_ST_SimpleMode;
+        protected internal override CustomComboPreset Preset { get; } = CustomComboPreset.DNC_AoE_AdvancedMode;
 
         protected override uint Invoke(uint actionID, uint lastComboMove, float comboTime, byte level)
         {
