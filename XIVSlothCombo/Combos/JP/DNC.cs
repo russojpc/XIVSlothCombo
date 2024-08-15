@@ -43,23 +43,24 @@ namespace XIVSlothCombo.Combos.JP
                 {
                     // 60  = Flourish cooldown 
                     // 2.5 = Next GCD after Technical Finish since it'll never go in the first weave window  
-                    // 1.5 = Standard Step Recast to accomodate for FanDance3 overcap 
-                    // 0.7 = Default Weave Time 
-                    var flourishCooldownOffset = 60 - 2.5 - 1.5 - 0.7;
+                    // 2.5 = 2nd GCD coverage at worst 
+                    var flourishCooldownOffset = 60 - 2.5 - 2.5;
                     if (IsOnCooldown(DNC.Devilment) && GetCooldownRemainingTime(DNC.Devilment) >= flourishCooldownOffset)
                         return DNC.Flourish;
                 }
                 if (hasTechnicalFinish || hasStandardFinish)
                 {
-                    if (HasEffect(DNC.Buffs.FourFoldFanDance))
-                        return DNC.FanDance4;
                     if (HasEffect(DNC.Buffs.ThreeFoldFanDance))
                         return DNC.FanDance3;
                     if (gauge.Feathers > 0)
                     {
-                        if (hasTechnicalFinish || gauge.Feathers > 3)
+                        if (hasTechnicalFinish)
+                            return DNC.FanDance1;
+                        if (gauge.Feathers > 3 && (hasFlow || hasSymmetry))
                             return DNC.FanDance1;
                     }
+                    if (HasEffect(DNC.Buffs.FourFoldFanDance))
+                        return DNC.FanDance4;
                 }
             }
 
@@ -95,7 +96,7 @@ namespace XIVSlothCombo.Combos.JP
             }
             if (ActionReady(DNC.StandardStep))
             {
-                if (!hasStandardFinish)
+                if (!hasStandardFinish || !LevelChecked(DNC.TechnicalStep))
                     return DNC.StandardStep;
                 // Hold it for burst check
                 // 5 = Standard Step + Dances + Standard Finish (1.5 + (2 * 1.0) + 1.5)
@@ -153,23 +154,24 @@ namespace XIVSlothCombo.Combos.JP
                 {
                     // 60  = Flourish cooldown 
                     // 2.5 = Next GCD after Technical Finish since it'll never go in the first weave window  
-                    // 1.5 = Standard Step Recast to accomodate for FanDance3 overcap 
-                    // 0.7 = Default Weave Time 
-                    var flourishCooldownOffset = 60 - 2.5 - 1.5 - 0.7;
+                    // 2.5 = 2nd GCD coverage at worst 
+                    var flourishCooldownOffset = 60 - 2.5 - 2.5;
                     if (IsOnCooldown(DNC.Devilment) && GetCooldownRemainingTime(DNC.Devilment) >= flourishCooldownOffset)
                         return DNC.Flourish;
                 }
                 if (hasTechnicalFinish || hasStandardFinish)
                 {
-                    if (HasEffect(DNC.Buffs.FourFoldFanDance))
-                        return DNC.FanDance4;
                     if (HasEffect(DNC.Buffs.ThreeFoldFanDance))
                         return DNC.FanDance3;
                     if (gauge.Feathers > 0)
                     {
-                        if (hasTechnicalFinish || gauge.Feathers > 3)
+                        if (hasTechnicalFinish)
+                            return DNC.FanDance2;
+                        if (gauge.Feathers > 3 && (hasFlow || hasSymmetry))
                             return DNC.FanDance2;
                     }
+                    if (HasEffect(DNC.Buffs.FourFoldFanDance))
+                        return DNC.FanDance4;
                 }
             }
 
@@ -205,7 +207,7 @@ namespace XIVSlothCombo.Combos.JP
             }
             if (ActionReady(DNC.StandardStep))
             {
-                if (!hasStandardFinish)
+                if (!hasStandardFinish || !LevelChecked(DNC.TechnicalStep))
                     return DNC.StandardStep;
                 // Hold it for burst check
                 // 5 = Standard Step + Dances + Standard Finish (1.5 + (2 * 1.0) + 1.5)
