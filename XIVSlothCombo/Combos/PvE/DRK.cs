@@ -59,7 +59,8 @@ namespace XIVSlothCombo.Combos.PvE
             public const ushort
                 // Main Buffs
                 BloodWeapon = 742,
-                Delirium = 3836,
+                Delirium = 1972,
+                EnhancedDelirium = 3836,
 
                 // Periodic Buffs
                 Darkside = 741,
@@ -70,10 +71,10 @@ namespace XIVSlothCombo.Combos.PvE
                 Scorn = 3837;
         }
 
-        public static class Debuffs
+        public static class Traits
         {
-            public const ushort
-                Placeholder = 1;
+            public const uint
+                EnhancedDelirium = 572;
         }
 
         public static class Config
@@ -119,7 +120,8 @@ namespace XIVSlothCombo.Combos.PvE
                     && LevelChecked(Disesteem)
                     && IsEnabled(CustomComboPreset.DRK_ST_CDs_Disesteem)
                     && HasEffect(Buffs.Scorn)
-                    && ((gauge.DarksideTimeRemaining > 0 && GetBuffRemainingTime(Buffs.Scorn) < 26) // Optimal usage
+                    && ((gauge.DarksideTimeRemaining > 0 // Optimal usage
+                         && GetBuffRemainingTime(Buffs.Scorn) < 24)
                         || GetBuffRemainingTime(Buffs.Scorn) < 14) // Emergency usage
                     )
                     return OriginalHook(Disesteem);
@@ -217,7 +219,8 @@ namespace XIVSlothCombo.Combos.PvE
                                     (IsEnabled(CustomComboPreset.DRK_ST_CDs_ShadowbringerBurst)
                                      && GetRemainingCharges(Shadowbringer) > 0
                                      && gauge.ShadowTimeRemaining > 1
-                                     && IsOnCooldown(Delirium))) // Burst
+                                     && IsOnCooldown(LivingShadow)
+                                     && !HasEffect(Buffs.Scorn))) // Burst
                                     return Shadowbringer;
                             }
 
@@ -234,7 +237,7 @@ namespace XIVSlothCombo.Combos.PvE
                 if (LevelChecked(Delirium)
                     && LevelChecked(ScarletDelirium)
                     && IsEnabled(CustomComboPreset.DRK_ST_Delirium_Chain)
-                    && HasEffect(Buffs.Delirium)
+                    && HasEffect(Buffs.EnhancedDelirium)
                     && gauge.DarksideTimeRemaining > 0)
                     return OriginalHook(Bloodspiller);
 
@@ -242,16 +245,17 @@ namespace XIVSlothCombo.Combos.PvE
                 if (LevelChecked(Delirium)
                     && IsEnabled(CustomComboPreset.DRK_ST_Bloodspiller))
                 {
-                    //Regular Bloodspiller
-                    if (GetBuffStacks(Buffs.Delirium) > 0)
+                    //Bloodspiller under Delirium
+                    var deliriumBuff = TraitLevelChecked(Traits.EnhancedDelirium)
+                        ? Buffs.EnhancedDelirium
+                        : Buffs.Delirium;
+                    if (GetBuffStacks(deliriumBuff) > 0)
                         return Bloodspiller;
 
-                    //Blood management before Delirium
+                    //Blood management outside of Delirium
                     if (IsEnabled(CustomComboPreset.DRK_ST_Delirium)
-                        && (
-                            (gauge.Blood >= 60 && GetCooldownRemainingTime(Delirium) is > 0 and < 3)
-                            || (gauge.Blood >= 50 && GetCooldownRemainingTime(Delirium) > 37)
-                            ))
+                        && ((gauge.Blood >= 60 && GetCooldownRemainingTime(Delirium) is > 0 and < 3) // Prep for Delirium
+                            || (gauge.Blood >= 50 && GetCooldownRemainingTime(Delirium) > 37))) // Regular Bloodspiller
                         return Bloodspiller;
                 }
 
@@ -379,7 +383,7 @@ namespace XIVSlothCombo.Combos.PvE
                 if (LevelChecked(Delirium)
                     && LevelChecked(Impalement)
                     && IsEnabled(CustomComboPreset.DRK_AoE_Delirium_Chain)
-                    && HasEffect(Buffs.Delirium)
+                    && HasEffect(Buffs.EnhancedDelirium)
                     && gauge.DarksideTimeRemaining > 1)
                     return OriginalHook(Quietus);
 
