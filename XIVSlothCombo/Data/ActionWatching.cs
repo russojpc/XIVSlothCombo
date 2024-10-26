@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using XIVSlothCombo.Combos.PvE;
 using XIVSlothCombo.CustomComboNS.Functions;
 using XIVSlothCombo.Services;
+using static XIVSlothCombo.Combos.JobHelpers.NIN;
 
 namespace XIVSlothCombo.Data
 {
@@ -34,6 +35,7 @@ namespace XIVSlothCombo.Data
         private static readonly Dictionary<string, List<uint>> statusCache = [];
 
         internal static readonly Dictionary<uint, long> ChargeTimestamps = [];
+        internal static readonly Dictionary<uint, long> ActionTimestamps = [];
 
         internal readonly static List<uint> CombatActions = [];
 
@@ -92,10 +94,15 @@ namespace XIVSlothCombo.Data
                 if (actionType == 1 && CustomComboFunctions.GetMaxCharges(actionId) > 0)
                     ChargeTimestamps[actionId] = Environment.TickCount64;
 
+                if (actionType == 1)
+                    ActionTimestamps[actionId] = Environment.TickCount64;
+
                 CheckForChangedTarget(actionId, ref targetObjectId);
                 SendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
                 TimeLastActionUsed = DateTime.Now;
                 ActionType = actionType;
+
+                UpdateHelpers(actionId);
 
                 //Dalamud.Logging.PluginLog.Debug($"{actionId} {sequence} {a5} {a6} {a7} {a8} {a9}");
             }
@@ -104,6 +111,14 @@ namespace XIVSlothCombo.Data
                 Svc.Log.Error(ex, "SendActionDetour");
                 SendActionHook!.Original(targetObjectId, actionType, actionId, sequence, a5, a6, a7, a8, a9);
             }
+        }
+
+        private static void UpdateHelpers(uint actionId)
+        {
+            if (actionId is NIN.Ten or NIN.Chi or NIN.Jin or NIN.TenCombo or NIN.ChiCombo or NIN.JinCombo)
+                NINHelper.InMudra = true;
+            else
+                NINHelper.InMudra = false;
         }
 
         private unsafe static void CheckForChangedTarget(uint actionId, ref ulong targetObjectId)
@@ -139,6 +154,19 @@ namespace XIVSlothCombo.Data
         public static unsafe bool OutOfRange(uint actionId, IGameObject source, IGameObject target)
         {
             return ActionManager.GetActionInRangeOrLoS(actionId, source.Struct(), target.Struct()) is 566;
+        }
+
+        /// <summary>
+        /// Returns the amount of time since an action was last used.
+        /// </summary>
+        /// <param name="actionId"></param>
+        /// <returns>Time in milliseconds if found, else -1.</returns>
+        public static float TimeSinceActionUsed(uint actionId)
+        {
+            if (ActionTimestamps.ContainsKey(actionId))
+                return Environment.TickCount64 - ActionTimestamps[actionId];
+
+            return -1f;
         }
 
         public static uint WhichOfTheseActionsWasLast(params uint[] actions)
@@ -228,6 +256,7 @@ namespace XIVSlothCombo.Data
             if (flag == ConditionFlag.InCombat && !value)
             {
                 CombatActions.Clear();
+                ActionTimestamps.Clear();
                 LastAbility = 0;
                 LastAction = 0;
                 LastWeaponskill = 0;
